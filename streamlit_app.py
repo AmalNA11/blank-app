@@ -1,34 +1,35 @@
 import streamlit as st
-import streamlit.components.v1 as components
+from streamlit_javascript import st_javascript
 
-st.title("🔍 Detect Your Local IP (LAN)")
+st.title("🔍 Detect Your Local IP (Private IP)")
 
-st.info("This attempts to detect your private/local IP address using WebRTC. May not work on all browsers.")
+st.info("Trying to detect your device's private/local IP using JavaScript + WebRTC.")
 
-# JavaScript code to extract local IP using WebRTC
-components.html(
+local_ip = st_javascript(
     """
-    <script>
-    async function getLocalIP() {
-        const pc = new RTCPeerConnection({iceServers: []});
-        pc.createDataChannel("");
-        pc.createOffer().then(offer => pc.setLocalDescription(offer));
+    async () => {
+        return await new Promise((resolve, reject) => {
+            const pc = new RTCPeerConnection({iceServers: []});
+            pc.createDataChannel("");
+            pc.createOffer().then(offer => pc.setLocalDescription(offer));
 
-        pc.onicecandidate = event => {
-            if (!event || !event.candidate) return;
-            const ipRegex = /([0-9]{1,3}(\\.[0-9]{1,3}){3})/;
-            const ipMatch = event.candidate.candidate.match(ipRegex);
-            if (ipMatch) {
-                const ip = ipMatch[1];
-                document.body.innerHTML = `<h3>Your Local IP: <code>${ip}</code></h3>`;
-                // You could also pass this back via Streamlit query params or other bridge if needed
-                pc.close();
-            }
-        };
+            pc.onicecandidate = event => {
+                if (!event || !event.candidate) return;
+                const ipRegex = /([0-9]{1,3}(\\.[0-9]{1,3}){3})/;
+                const ipMatch = event.candidate.candidate.match(ipRegex);
+                if (ipMatch) {
+                    resolve(ipMatch[1]);
+                    pc.close();
+                }
+            };
+
+            setTimeout(() => resolve(null), 3000); // Fallback timeout
+        });
     }
-
-    getLocalIP();
-    </script>
-    """,
-    height=100,
+    """
 )
+
+if local_ip:
+    st.success(f"Your Local IP Address is: {local_ip}")
+else:
+    st.warning("Could not detect local IP. Try a different browser or local deployment.")
