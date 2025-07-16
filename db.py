@@ -7,15 +7,19 @@ cursor = conn.cursor()
 def init_db():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS ip_log (
-            ip TEXT,
+            local_ip TEXT,
+            public_ip TEXT,
             timestamp TEXT
         )
     """)
     conn.commit()
 
-def log_ip(ip):
+def log_ip(local_ip, public_ip):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    cursor.execute("INSERT INTO ip_log (ip, timestamp) VALUES (?, ?)", (ip, timestamp))
+    cursor.execute(
+        "INSERT INTO ip_log (local_ip, public_ip, timestamp) VALUES (?, ?, ?)",
+        (local_ip, public_ip, timestamp)
+    )
     conn.commit()
 
 def get_logs():
