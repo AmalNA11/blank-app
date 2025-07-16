@@ -4,7 +4,7 @@ import requests
 st.title("Remote Print to My Local Printer")
 
 # Replace this with your ngrok URL
-PRINTER_BRIDGE_URL = "https://fe3a5cb9e156.ngrok-free.app/print"
+PRINTER_BRIDGE_URL = "https://8e794236e4a3.ngrok-free.app/print"
 
 text_to_print = st.text_area("Enter text to print")
 
