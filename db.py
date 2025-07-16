@@ -1,9 +1,7 @@
-# db.py
-
 import sqlite3
 from datetime import datetime
 
-conn = sqlite3.connect("ip_logs.db", check_same_thread=False)
+conn = sqlite3.connect("ip_log.db", check_same_thread=False)
 cursor = conn.cursor()
 
 def init_db():
@@ -15,7 +13,7 @@ def init_db():
     """)
     conn.commit()
 
-def log_ip(ip: str):
+def log_ip(ip):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     cursor.execute("INSERT INTO ip_log (ip, timestamp) VALUES (?, ?)", (ip, timestamp))
     conn.commit()

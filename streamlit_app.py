@@ -12,6 +12,7 @@ if st.button("Log My IP"):
     try:
         ip = requests.get("https://ipinfo.io/ip", timeout=3).text.strip()
         st.success(f"Your IP is: {ip}")
+        db.log_ip(ip)
     except requests.exceptions.Timeout:
         st.error("Request timed out. Please check your internet connection.")
     except Exception as e:
