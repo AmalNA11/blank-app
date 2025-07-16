@@ -1,40 +1,24 @@
 import streamlit as st
-import streamlit.components.v1 as components
+import requests
 import db
 
-st.set_page_config(page_title="IP Logger", page_icon="🌐")
-st.title("🌐 Your Public IP")
+st.title("Log My IP")
 
-# Inject JavaScript to get IP from client
-components.html("""
-    <script>
-        fetch("https://api.ipify.org?format=json")
-            .then(res => res.json())
-            .then(data => {
-                const ip = data.ip;
-                const queryString = new URLSearchParams({ ip }).toString();
-                const newUrl = window.location.pathname + "?" + queryString;
-                window.location.href = newUrl;
-            });
-    </script>
-""", height=0)
+# Initialize database
+db.init_db()
 
-# Get IP from query parameters (uses updated API)
-params = st.query_params
-client_ip = params.get("ip", None)
+# Button to fetch and log IP
+if st.button("Log My IP"):
+    try:
+        ip = requests.get("https://ipinfo.io/ip", timeout=3).text.strip()
+        st.success(f"Your IP is: {ip}")
+    except requests.exceptions.Timeout:
+        st.error("Request timed out. Please check your internet connection.")
+    except Exception as e:
+        st.error(f"Error: {e}")
 
-if client_ip:
-    st.success(f"Your IP address is: `{client_ip}`")
-
-    if "ip_logged" not in st.session_state:
-        db.log_ip(client_ip)
-        st.session_state.ip_logged = True
-else:
-    st.info("Fetching your IP...")
-
-# Show log (optional)
-if st.checkbox("Show IP log"):
+# Optional: View logs
+if st.checkbox("Show visitor log"):
     logs = db.get_logs()
-    st.write("### IP Log")
     for ip, ts in logs:
-        st.write(f"`{ip}` at *{ts}*")
+        st.write(f"{ip} at {ts}")
