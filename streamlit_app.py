@@ -4,7 +4,7 @@ import subprocess
 st.title("Print to Virtual PDF Printer")
 
 def print_text(text):
-    subprocess.run(['lp', '-d', 'Virtual_PDF'], input=text.encode())
+    subprocess.run(['lp', '-d', 'PDF'], input=text.encode())
 
 text_to_print = st.text_area("Enter text to print")
 
