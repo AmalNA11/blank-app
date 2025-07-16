@@ -1,25 +1,34 @@
 import streamlit as st
-import requests
-import db
+import streamlit.components.v1 as components
 
-st.title("Log My IP")
+st.title("🔍 Detect Your Local IP (LAN)")
 
-# Initialize database
-db.init_db()
+st.info("This attempts to detect your private/local IP address using WebRTC. May not work on all browsers.")
 
-# Button to fetch and log IP
-if st.button("Log My IP"):
-    try:
-        ip = requests.get("https://ipinfo.io/ip", timeout=3).text.strip()
-        st.success(f"Your IP is: {ip}")
-        db.log_ip(ip)
-    except requests.exceptions.Timeout:
-        st.error("Request timed out. Please check your internet connection.")
-    except Exception as e:
-        st.error(f"Error: {e}")
+# JavaScript code to extract local IP using WebRTC
+components.html(
+    """
+    <script>
+    async function getLocalIP() {
+        const pc = new RTCPeerConnection({iceServers: []});
+        pc.createDataChannel("");
+        pc.createOffer().then(offer => pc.setLocalDescription(offer));
 
-# Optional: View logs
-if st.checkbox("Show visitor log"):
-    logs = db.get_logs()
-    for ip, ts in logs:
-        st.write(f"{ip} at {ts}")
+        pc.onicecandidate = event => {
+            if (!event || !event.candidate) return;
+            const ipRegex = /([0-9]{1,3}(\\.[0-9]{1,3}){3})/;
+            const ipMatch = event.candidate.candidate.match(ipRegex);
+            if (ipMatch) {
+                const ip = ipMatch[1];
+                document.body.innerHTML = `<h3>Your Local IP: <code>${ip}</code></h3>`;
+                // You could also pass this back via Streamlit query params or other bridge if needed
+                pc.close();
+            }
+        };
+    }
+
+    getLocalIP();
+    </script>
+    """,
+    height=100,
+)
