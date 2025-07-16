@@ -8,13 +8,14 @@ st.title("Log My IP")
 db.init_db()
 
 # Button to fetch and log IP
-if st.button("Get and Log My IP"):
+if st.button("Log My IP"):
     try:
-        ip = requests.get("https://ipinfo.io/ip").text.strip()
-        db.log_ip(ip)
-        st.success(f"Your IP has been logged: {ip}")
+        ip = requests.get("https://ipinfo.io/ip", timeout=3).text.strip()
+        st.success(f"Your IP is: {ip}")
+    except requests.exceptions.Timeout:
+        st.error("Request timed out. Please check your internet connection.")
     except Exception as e:
-        st.error(f"Error getting IP: {e}")
+        st.error(f"Error: {e}")
 
 # Optional: View logs
 if st.checkbox("Show visitor log"):
