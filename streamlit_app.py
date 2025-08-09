@@ -1,47 +1,31 @@
 import streamlit as st
-import requests
+import random
+import time
 
-st.title("🖨️ Remote Print to My Local Printer")
+st.title("Random Stranger Chat 🗨️")
 
-# Input for Printer Bridge URL
-st.subheader("🔗 Configure Printer Bridge URL")
-printer_bridge_url = st.text_input(
-    "Enter your local printer bridge URL (e.g. https://xxxx.trycloudflare.com/print):",
-    placeholder="https://your-url.com/print"
-)
+# Mock database of rooms (in real life, store in Firebase or server)
+if "rooms" not in st.session_state:
+    st.session_state.rooms = {}
+if "room_id" not in st.session_state:
+    st.session_state.room_id = None
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-# Input for Printer Name
-st.subheader("🖨️ Printer Name")
-printer_name = st.text_input(
-    "Enter your printer name (e.g. PDF, HP_LaserJet, etc.):",
-    placeholder="PDF"
-)
+# Match user to random room
+if st.button("Find Stranger"):
+    room_id = random.randint(1000, 9999)
+    st.session_state.room_id = room_id
+    st.session_state.messages = []
+    st.success(f"Connected to stranger in room {room_id}")
 
-# Input text to print
-st.subheader("📝 Text to Print")
-text_to_print = st.text_area("Enter the text you want to send to your printer:")
+# Display messages
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["text"])
 
-# Submit
-if st.button("🖨️ Print"):
-    if not printer_bridge_url.strip():
-        st.error("Please enter your printer bridge URL.")
-    elif not printer_name.strip():
-        st.error("Please enter your printer name.")
-    elif not text_to_print.strip():
-        st.warning("Please enter some text to print.")
-    else:
-        try:
-            response = requests.post(
-                printer_bridge_url,
-                json={
-                    "text": text_to_print,
-                    "printer": printer_name
-                },
-                timeout=5
-            )
-            if response.ok:
-                st.success("✅ Sent to your local printer successfully!")
-            else:
-                st.error(f"❌ Printer error: {response.status_code} - {response.text}")
-        except requests.exceptions.RequestException as e:
-            st.error(f"🚫 Failed to connect to the printer bridge.\n\n{e}")
+# Chat input
+if st.session_state.room_id:
+    if prompt := st.chat_input("Say something..."):
+        st.session_state.messages.append({"role": "user", "text": prompt})
+        st.session_state.messages.append({"role": "assistant", "text": "👋 Stranger replies: Hi there!"})  # Mock reply
